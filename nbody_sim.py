@@ -8,8 +8,8 @@ maxx = 10000
 maxy = 10000
 maxz = 10000
 
-dt = 10.0
-t_max = 100000
+dt = 1
+t_max = 10000
 
 
 def vector_magnitude(v):
@@ -37,7 +37,7 @@ def calculate_acceleration(ball_list, index):
     for b2 in ball_list:
         r12 = b.distance(b2)
         if r12 > 0:
-            a_magnitude = G * b2.mass / (r12 * r12)
+            a_magnitude = G * b2.mass / (r12**2)
             u = np.array(b2.pos) - np.array(b.pos)
             u = u / (vector_magnitude(u))
             a += (a_magnitude * u)
@@ -50,17 +50,17 @@ def comp_acc(ball_list):
     return output
 
 def move(ball_list, i):
-    b = ball_list[i]
-    b.pos = b.pos + b.vel * dt + 0.5 * dt * dt * b.acc
+    ball_list[i].pos = ball_list[i].pos + (ball_list[i].vel*dt) + 0.5*dt*dt * ball_list[i].acc
     new_acc = calculate_acceleration(ball_list, i)
-    b.vel = b.vel + 0.5 * (b.acc + new_acc) * dt
-    b.acc = new_acc
+    ball_list[i].vel = ball_list[i].vel + 0.5 * (ball_list[i].acc + new_acc) * dt
+    ball_list[i].acc = new_acc
+
     
 def K(ball_list):
     result = 0.0
     for i in range(len(ball_list)):
         v = vector_magnitude(ball_list[i].vel)
-        result += (0.5 * v * v)
+        result += (0.5 * ball_list[i].mass * v * v)
     return result
 
 def U(ball_list):
@@ -122,7 +122,6 @@ print("Potential energy: \t", U(ball_list))
 while (frame < t_max and DEBUG == False):
     
     for root in range(len(ball_list)):
-        #Move the ball based on its velocity
         move(ball_list, root)
         
         #Check collisions with walls

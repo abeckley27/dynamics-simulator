@@ -15,7 +15,8 @@ class Ball(object):
     def __repr__(self):
         output = '(' + str(self.pos[0])+ ", " + str(self.pos[1]) + ", "
         output = output + str(self.pos[2]) + ') ' + str(self.radius) + " "
-        output = output + self.color + "\t speed = " + str(self.speed())
+        output = output + self.color + "\t speed = " + str(self.speed()) 
+        output = output + ' ' + str(self.accel())
         return output
 
     def check_intersect(self, b2):
@@ -71,6 +72,9 @@ class Ball(object):
 
     def speed(self):
         return math.sqrt(self.vel[0]**2 + self.vel[1]**2 + self.vel[2]**2)
+    
+    def accel(self):
+        return math.sqrt(self.acc[0]**2 + self.acc[1]**2 + self.acc[2]**2)
 
     def area(self):
         return (self.radius ** 2) * math.pi
