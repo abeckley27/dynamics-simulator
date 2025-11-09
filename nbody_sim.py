@@ -1,13 +1,15 @@
 import Ball3d
+import time
 import numpy as np
+import numpy.linalg as npla
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
-
+import numba
 
 G = 6.674e-11
-dt = 100.0
-t_max = 2000
+dt = 10
+t_max = 30000
 snapshot_interval = 10000
 
 def vector_magnitude(v):
@@ -28,15 +30,15 @@ def collision(i, j, ball_list):
     
     #elastic collisions in 3d
 
+
 def calculate_acceleration(ball_list, index):
     a = np.zeros(3)
     b = ball_list[index]
     for b2 in range(len(ball_list)):
         if b2 != index:
             a_magnitude = G * ball_list[b2].mass / (b.distance(ball_list[b2])**2)
-            u = np.array(ball_list[b2].pos) - np.array(b.pos)
-            u = u / (vector_magnitude(u))
-            a += (a_magnitude * u)
+            u = ball_list[b2].pos - b.pos
+            a += (a_magnitude / vector_magnitude(u)) * u
     return a
 
 def comp_acc(ball_list):
@@ -78,17 +80,20 @@ def print_balls(lst):
 filename = "nbody_data1.txt"
 print ('==> ' + filename)
 
-f1 = open(filename, 'r')
-ball_init = []
+
 # Set up ball_init as a two dimensional list containing all of the
 # information about that balls in the simulation.
-
+f1 = open(filename, 'r')
+ball_init = []
 for line in f1:
     ball_init.append(line.split('\t'))
 
 f1.close()
+
+#Once the file operations are done, start a timer
+t0 = time.time()
 ball_list = []
-print(ball_init)     #For testing purposes
+#print(ball_init)     #For testing purposes
 
 #Import the data from the file into ball objects
 for line in ball_init:
@@ -163,9 +168,13 @@ print ('Ends at time %d, with the following state:' %(t*dt))
 print_balls(ball_list)
 print("Kinetic energy: \t", K(ball_list))
 print("Potential energy: \t", U(ball_list))
+print("Change in energy: \t", (K(ball_list)+U(ball_list) - E0) )
 
 #print(U(ball_list) - U0)
 #print(K(ball_list) - K0)
+
+t1 = time.time()
+print("Time taken: \t", t1 - t0)
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -189,23 +198,23 @@ def init():
     line3.set_3d_properties([])
     return line1, line2, line3
 
-
+n = 25
 def update(frame):
-    x1 = xdata1[:frame]
-    y1 = ydata1[:frame]
-    z1 = zdata1[:frame]
+    x1 = xdata1[:frame*n]
+    y1 = ydata1[:frame*n]
+    z1 = zdata1[:frame*n]
     line1.set_data(x1, y1)
     line1.set_3d_properties(z1)
     
-    x2 = xdata2[:frame]
-    y2 = ydata2[:frame]
-    z2 = zdata2[:frame]
+    x2 = xdata2[:frame*n]
+    y2 = ydata2[:frame*n]
+    z2 = zdata2[:frame*n]
     line2.set_data(x2, y2)
     line2.set_3d_properties(z2)
     
-    x3 = xdata3[:frame]
-    y3 = ydata3[:frame]
-    z3 = zdata3[:frame]
+    x3 = xdata3[:frame*n]
+    y3 = ydata3[:frame*n]
+    z3 = zdata3[:frame*n]
     line3.set_data(x3, y3)
     line3.set_3d_properties(z3)
     
@@ -213,14 +222,13 @@ def update(frame):
 
 
 ani = animation.FuncAnimation(
-    fig, update, frames=1000, init_func=init, blit=True
+    fig, update, frames=900, init_func=init, blit=True
 )
 
 ani.save("3body.mp4", writer="ffmpeg", fps=30)
+t2 = time.time()
 
-
-
-
+print("Animation time: \t", (t2 - t1))
 
 
 
