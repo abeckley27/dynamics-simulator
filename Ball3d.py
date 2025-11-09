@@ -37,10 +37,6 @@ class Ball(object):
         z_dist = abs(self.pos[2] - b2.pos[2])
         return math.sqrt(x_dist**2 + y_dist**2 + z_dist**2)
 
-    def move(self):
-        self.x = self.x + self.vx
-        self.y = self.y + self.vy
-
     def get_color(self):
         return self.color
 

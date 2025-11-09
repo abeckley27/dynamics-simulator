@@ -8,8 +8,8 @@ maxx = 10000
 maxy = 10000
 maxz = 10000
 
-dt = 1
-t_max = 10000
+dt = 1.0
+t_max = 100000
 
 
 def vector_magnitude(v):
@@ -50,7 +50,7 @@ def comp_acc(ball_list):
     return output
 
 def move(ball_list, i):
-    ball_list[i].pos = ball_list[i].pos + (ball_list[i].vel*dt) + 0.5*dt*dt * ball_list[i].acc
+    ball_list[i].pos = ball_list[i].pos + (dt * ball_list[i].vel) + 0.5*dt*dt * ball_list[i].acc
     new_acc = calculate_acceleration(ball_list, i)
     ball_list[i].vel = ball_list[i].vel + 0.5 * (ball_list[i].acc + new_acc) * dt
     ball_list[i].acc = new_acc
@@ -66,9 +66,9 @@ def K(ball_list):
 def U(ball_list):
     output = 0.0
     for i in range(len(ball_list)):
-        for j in range(len(ball_list)):
+        for j in range(i):
             if i != j:
-                Uij = -1 * G * ball_list[i].mass * ball_list[j].mass
+                Uij = -1.0 * G * ball_list[i].mass * ball_list[j].mass
                 Uij /= ball_list[i].distance(ball_list[j])
                 output += Uij
     return output
@@ -116,6 +116,9 @@ DEBUG = False
 
 print("Kinetic energy: \t", K(ball_list))
 print("Potential energy: \t", U(ball_list))
+K0 = K(ball_list)
+U0 = U(ball_list)
+E0 = K0 + U0
 
 
 #Start main simulation loop
@@ -142,7 +145,8 @@ print_balls(ball_list)
 print("Kinetic energy: \t", K(ball_list))
 print("Potential energy: \t", U(ball_list))
 
-
+#print(U(ball_list) - U0)
+#print(K(ball_list) - K0)
 
 
 
