@@ -13,7 +13,10 @@ class Ball(object):
         self.mass = m_
 
     def __repr__(self):
-        return '(' + str(self.pos[0])+ ", " + str(self.pos[1]) + ", " + str(self.pos[2]) + ') ' + str(self.radius) + " " + self.color
+        output = '(' + str(self.pos[0])+ ", " + str(self.pos[1]) + ", "
+        output = output + str(self.pos[2]) + ') ' + str(self.radius) + " "
+        output = output + self.color + "\t speed = " + str(self.speed())
+        return output
 
     def position(self):
         return (self.pos[0], self.pos[1], self.pos[2])
@@ -68,15 +71,9 @@ class Ball(object):
             self.vy = self.vy * -1
             self.y = 2 * maxy - self.y
             
-        
-        
-        
-
-    def velocity(self):
-        return (self.vx, self.vy)
 
     def speed(self):
-        return math.sqrt(self.vx**2 + self.vy**2)
+        return math.sqrt(self.vel[0]**2 + self.vel[1]**2 + self.vel[2]**2)
 
     def area(self):
         return (self.radius ** 2) * math.pi

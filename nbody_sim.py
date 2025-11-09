@@ -4,45 +4,65 @@ import numpy as np
 
 G = 6.674e-11
 
+maxx = 10000
+maxy = 10000
+maxz = 10000
+
+dt = 10.0
+t_max = 100000
+
+
 def vector_magnitude(v):
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
 
 # Change the necessary values if two balls are colliding
-def collision(b1, b2):
-    #todo: implement this
-    return 0
+def collision(i, j, ball_list):
+    m1 = ball_list[i].mass
+    m2 = ball_list[j].mass
+    v1 = ball_list[i].vel
+    v2 = ball_list[j].vel
+    frame_shift = v2
+    v1 -= v2
+    v1f = ((m1 - m2) / (m1 + m2)) * v1
+    v2f = (2*m1 / (m1 + m2)) * v1
+    v1f += frame_shift
+    v2f += frame_shift
     
+    #elastic collisions in 3d
 
-def calculate_acceleration(ball_list):
+
+def calculate_acceleration(ball_list, index):
+    a = np.zeros(3)
+    b = ball_list[index]
+    for b2 in ball_list:
+        r12 = b.distance(b2)
+        if r12 > 0:
+            a_magnitude = G * b2.mass / (r12 * r12)
+            u = np.array(b2.pos) - np.array(b.pos)
+            u = u / (vector_magnitude(u))
+            a += (a_magnitude * u)
+    return a
+
+def comp_acc(ball_list):
     output = []
-    for b in ball_list:
-        a = np.zeros(3)
-        
-        for b2 in ball_list:
-            r12 = b.distance(b2)
-            if r12 > 0:
-                a_magnitude = G * b2.mass / (r12 * r12)
-                u = np.array(b2.pos) - np.array(b.pos)
-                u = u / (vector_magnitude(u))
-                a += (a_magnitude * u)
-        
-        output.append(a)
+    for k in range(len(ball_list)):
+        output.append(calculate_acceleration(ball_list, k))
     return output
+
+def move(ball_list, i):
+    b = ball_list[i]
+    b.pos = b.pos + b.vel * dt + 0.5 * dt * dt * b.acc
+    new_acc = calculate_acceleration(ball_list, i)
+    b.vel = b.vel + 0.5 * (b.acc + new_acc) * dt
+    b.acc = new_acc
     
 
 def print_balls(lst):
     for k in lst:
         print(k)
 
-
-maxx = 1000
-maxy = 1000
-maxz = 1000
-
-t_max = 100
-
-
-filename = input('Enter the name of the data file: ')
+#filename = input('Enter the name of the data file: ')
+filename = "nbody_data1.txt"
 print ('==> ' + filename)
 
 f1 = open(filename, 'r')
@@ -60,8 +80,8 @@ print(ball_init)     #For testing purposes
 
 #Import the data from the file into ball objects
 for line in ball_init:
-    position = [float(line[0]), float(line[1]), float(line[2])]
-    velocity = [float(line[3]), float(line[4]), float(line[5])]
+    position = np.array([float(line[0]), float(line[1]), float(line[2])])
+    velocity = np.array([float(line[3]), float(line[4]), float(line[5])])
     radius = float(line[6])
     mass = float(line[7])
     color = line[8]
@@ -69,31 +89,37 @@ for line in ball_init:
     ball_list.append(new_obj)
 
 
+for k in range(len(ball_list)):
+    ball_list[k].acc = calculate_acceleration(ball_list, k)
 
 print ('Initial ball configuration:')
 print_balls(ball_list)
 frame = 0
+DEBUG = False
 
 
 #Start main simulation loop
-while (frame < t_max):
+while (frame < t_max and DEBUG == False):
     
-    #for root in ball_list:
+    for root in range(len(ball_list)):
         #Move the ball based on its velocity
-        #move(root)
+        move(ball_list, root)
         
         #Check collisions with walls
         #root.check_and_reverse(maxx, maxy, maxz)
 
         #Check for collisions between balls
-        #for b in ball_list:
-        #    if (root != b) and root.check_intersect(b):
-        #        collision(root, b)
+        for j in range(len(ball_list)):
+            if ball_list[root].check_intersect(ball_list[j]) and root != j:
+                print(root, j, frame)
+                #print_balls(ball_list)
+                DEBUG = True
+                collision(root, j, ball_list)
     
     frame += 1 
 
-#print ('Ends at maximum number of iterations, %d, with the following state:' %frame)
-#print_balls()
+print ('Ends at time %d, with the following state:' %(frame*dt))
+print_balls(ball_list)
 
 
 
