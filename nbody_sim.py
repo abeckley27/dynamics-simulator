@@ -56,6 +56,23 @@ def move(ball_list, i):
     b.vel = b.vel + 0.5 * (b.acc + new_acc) * dt
     b.acc = new_acc
     
+def K(ball_list):
+    result = 0.0
+    for i in range(len(ball_list)):
+        v = vector_magnitude(ball_list[i].vel)
+        result += (0.5 * v * v)
+    return result
+
+def U(ball_list):
+    output = 0.0
+    for i in range(len(ball_list)):
+        for j in range(len(ball_list)):
+            if i != j:
+                Uij = -1 * G * ball_list[i].mass * ball_list[j].mass
+                Uij /= ball_list[i].distance(ball_list[j])
+                output += Uij
+    return output
+    
 
 def print_balls(lst):
     for k in lst:
@@ -97,6 +114,9 @@ print_balls(ball_list)
 frame = 0
 DEBUG = False
 
+print("Kinetic energy: \t", K(ball_list))
+print("Potential energy: \t", U(ball_list))
+
 
 #Start main simulation loop
 while (frame < t_max and DEBUG == False):
@@ -120,8 +140,8 @@ while (frame < t_max and DEBUG == False):
 
 print ('Ends at time %d, with the following state:' %(frame*dt))
 print_balls(ball_list)
-
-
+print("Kinetic energy: \t", K(ball_list))
+print("Potential energy: \t", U(ball_list))
 
 
 

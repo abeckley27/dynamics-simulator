@@ -18,9 +18,6 @@ class Ball(object):
         output = output + self.color + "\t speed = " + str(self.speed())
         return output
 
-    def position(self):
-        return (self.pos[0], self.pos[1], self.pos[2])
-
     def check_intersect(self, b2):
         x1 = self.pos[0]
         y1 = self.pos[1]
