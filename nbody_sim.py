@@ -6,9 +6,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 G = 6.674e-11
-dt = 10.0
-t_max = 20000
-snapshot_interval = 1000
+dt = 100.0
+t_max = 2000
+snapshot_interval = 10000
 
 def vector_magnitude(v):
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
@@ -106,7 +106,6 @@ for k in range(len(ball_list)):
 
 print ('Initial ball configuration:')
 print_balls(ball_list)
-frame = 0
 DEBUG = False
 
 print("Kinetic energy: \t", K(ball_list))
@@ -117,12 +116,11 @@ E0 = K0 + U0
 
 position_data = np.zeros((len(ball_list), int(t_max) + 1, 3))
 
-def get_path(i):
-    t = np.linspace(0, frame * dt, frame)
-    x = np.zeros(frame)
-    y = np.zeros(frame)
-    z = np.zeros(frame)
-    for k in range(frame):
+def get_path(i, tstop):
+    x = np.zeros(tstop)
+    y = np.zeros(tstop)
+    z = np.zeros(tstop)
+    for k in range(tstop):
         x[k] = position_data[i][k][0]
         y[k] = position_data[i][k][1]
         z[k] = position_data[i][k][2]
@@ -130,17 +128,18 @@ def get_path(i):
     return (x, y, z)
 
 
-def plot_paths():
+def plot_paths(tstop):
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    x0, y0, z0 = get_path(0)
-    x1, y1, z1 = get_path(1)
-    x2, y2, z2 = get_path(2)
+    x0, y0, z0 = get_path(0, tstop)
+    x1, y1, z1 = get_path(1, tstop)
+    x2, y2, z2 = get_path(2, tstop)
     ax.plot(x0, y0, z0)
     ax.plot(x1, y1, z1)
     ax.plot(x2, y2, z2)
 
 #Start main simulation loop
-while (frame < t_max and DEBUG == False):
+t = 0
+while (t < t_max and DEBUG == False):
     
     for root in range(len(ball_list)):
         move(ball_list, root)
@@ -150,17 +149,17 @@ while (frame < t_max and DEBUG == False):
         for j in range(len(ball_list)):
             if ball_list[root].check_intersect(ball_list[j]) and root != j:
                 print("Collision Detected")
-                print(root, j, frame)
+                print(root, j, t)
                 DEBUG = True
                 collision(root, j, ball_list)
-        position_data[root][frame][0] = ball_list[root].pos[0]
-        position_data[root][frame][1] = ball_list[root].pos[1]
-        position_data[root][frame][2] = ball_list[root].pos[2]
-    frame += 1 
-    if (frame % snapshot_interval == 0):
-        plot_paths()
+        position_data[root][t][0] = ball_list[root].pos[0]
+        position_data[root][t][1] = ball_list[root].pos[1]
+        position_data[root][t][2] = ball_list[root].pos[2]
+    t += 1 
+    if (t % snapshot_interval == 0):
+        plot_paths(max(0, t - 1))
 
-print ('Ends at time %d, with the following state:' %(frame*dt))
+print ('Ends at time %d, with the following state:' %(t*dt))
 print_balls(ball_list)
 print("Kinetic energy: \t", K(ball_list))
 print("Potential energy: \t", U(ball_list))
@@ -168,27 +167,56 @@ print("Potential energy: \t", U(ball_list))
 #print(U(ball_list) - U0)
 #print(K(ball_list) - K0)
 
-fig, ax = plt.subplots()
-xdata, ydata, zdata = [], [], []
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+line1, = ax.plot([], [], [], 'b-', lw=2)
+line2, = ax.plot([], [], [], 'g-', lw=2)
+line3, = ax.plot([], [], [], 'r-', lw=2)
+ax.set_xlim(-100, 500)
+ax.set_ylim(-100, 500)
+ax.set_zlim(-100, 500)
+xdata1, ydata1, zdata1 = get_path(0, t)
+xdata2, ydata2, zdata2 = get_path(1, t)
+xdata3, ydata3, zdata3 = get_path(2, t)
 
 
 def init():
-    return 0
+    line1.set_data([], [])
+    line2.set_data([], [])
+    line3.set_data([], [])
+    line1.set_3d_properties([])
+    line2.set_3d_properties([])
+    line3.set_3d_properties([])
+    return line1, line2, line3
 
-def update():
-    return 0 
 
-'''    
-the animation is a work in progress and probably won't run yet
+def update(frame):
+    x1 = xdata1[:frame]
+    y1 = ydata1[:frame]
+    z1 = zdata1[:frame]
+    line1.set_data(x1, y1)
+    line1.set_3d_properties(z1)
+    
+    x2 = xdata2[:frame]
+    y2 = ydata2[:frame]
+    z2 = zdata2[:frame]
+    line2.set_data(x2, y2)
+    line2.set_3d_properties(z2)
+    
+    x3 = xdata3[:frame]
+    y3 = ydata3[:frame]
+    z3 = zdata3[:frame]
+    line3.set_data(x3, y3)
+    line3.set_3d_properties(z3)
+    
+    return line1, line2, line3
+
+
 ani = animation.FuncAnimation(
-    fig, update, frames=np.linspace(0, 100*dt, 100),
-    init_func=init, blit=True
+    fig, update, frames=1000, init_func=init, blit=True
 )
-plt.show()
-'''
 
-
-
+ani.save("3body.mp4", writer="ffmpeg", fps=30)
 
 
 
