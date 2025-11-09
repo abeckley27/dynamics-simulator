@@ -1,16 +1,14 @@
 import Ball3d
 import numpy as np
+from matplotlib import pyplot as plt
+import matplotlib.animation as animation
+from mpl_toolkits.mplot3d import Axes3D
 
 
 G = 6.674e-11
-
-maxx = 10000
-maxy = 10000
-maxz = 10000
-
-dt = 1.0
-t_max = 100000
-
+dt = 10.0
+t_max = 20000
+snapshot_interval = 1000
 
 def vector_magnitude(v):
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
@@ -30,15 +28,13 @@ def collision(i, j, ball_list):
     
     #elastic collisions in 3d
 
-
 def calculate_acceleration(ball_list, index):
     a = np.zeros(3)
     b = ball_list[index]
-    for b2 in ball_list:
-        r12 = b.distance(b2)
-        if r12 > 0:
-            a_magnitude = G * b2.mass / (r12**2)
-            u = np.array(b2.pos) - np.array(b.pos)
+    for b2 in range(len(ball_list)):
+        if b2 != index:
+            a_magnitude = G * ball_list[b2].mass / (b.distance(ball_list[b2])**2)
+            u = np.array(ball_list[b2].pos) - np.array(b.pos)
             u = u / (vector_magnitude(u))
             a += (a_magnitude * u)
     return a
@@ -84,7 +80,6 @@ print ('==> ' + filename)
 
 f1 = open(filename, 'r')
 ball_init = []
-
 # Set up ball_init as a two dimensional list containing all of the
 # information about that balls in the simulation.
 
@@ -120,6 +115,29 @@ K0 = K(ball_list)
 U0 = U(ball_list)
 E0 = K0 + U0
 
+position_data = np.zeros((len(ball_list), int(t_max) + 1, 3))
+
+def get_path(i):
+    t = np.linspace(0, frame * dt, frame)
+    x = np.zeros(frame)
+    y = np.zeros(frame)
+    z = np.zeros(frame)
+    for k in range(frame):
+        x[k] = position_data[i][k][0]
+        y[k] = position_data[i][k][1]
+        z[k] = position_data[i][k][2]
+    
+    return (x, y, z)
+
+
+def plot_paths():
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    x0, y0, z0 = get_path(0)
+    x1, y1, z1 = get_path(1)
+    x2, y2, z2 = get_path(2)
+    ax.plot(x0, y0, z0)
+    ax.plot(x1, y1, z1)
+    ax.plot(x2, y2, z2)
 
 #Start main simulation loop
 while (frame < t_max and DEBUG == False):
@@ -127,18 +145,20 @@ while (frame < t_max and DEBUG == False):
     for root in range(len(ball_list)):
         move(ball_list, root)
         
-        #Check collisions with walls
-        #root.check_and_reverse(maxx, maxy, maxz)
 
         #Check for collisions between balls
         for j in range(len(ball_list)):
             if ball_list[root].check_intersect(ball_list[j]) and root != j:
+                print("Collision Detected")
                 print(root, j, frame)
-                #print_balls(ball_list)
                 DEBUG = True
                 collision(root, j, ball_list)
-    
+        position_data[root][frame][0] = ball_list[root].pos[0]
+        position_data[root][frame][1] = ball_list[root].pos[1]
+        position_data[root][frame][2] = ball_list[root].pos[2]
     frame += 1 
+    if (frame % snapshot_interval == 0):
+        plot_paths()
 
 print ('Ends at time %d, with the following state:' %(frame*dt))
 print_balls(ball_list)
@@ -148,12 +168,24 @@ print("Potential energy: \t", U(ball_list))
 #print(U(ball_list) - U0)
 #print(K(ball_list) - K0)
 
+fig, ax = plt.subplots()
+xdata, ydata, zdata = [], [], []
 
 
+def init():
+    return 0
 
+def update():
+    return 0 
 
-
-
+'''    
+the animation is a work in progress and probably won't run yet
+ani = animation.FuncAnimation(
+    fig, update, frames=np.linspace(0, 100*dt, 100),
+    init_func=init, blit=True
+)
+plt.show()
+'''
 
 
 

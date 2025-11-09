@@ -19,23 +19,17 @@ class Ball(object):
         output = output + ' ' + str(self.accel())
         return output
 
-    def check_intersect(self, b2):
-        x1 = self.pos[0]
-        y1 = self.pos[1]
-        z1 = self.pos[2]
-        x2 = b2.pos[0]
-        y2 = b2.pos[1]
-        z2 = b2.pos[2]
-        dist = math.sqrt((y2 - y1)**2 + (x2 - x1)**2 + (z2 - z1)**2)
-        r1 = abs(self.rad())
-        r2 = abs(b2.rad())
-        return dist <= r1 + r2
-
     def distance(self, b2):
         x_dist = abs(self.pos[0] - b2.pos[0])
         y_dist = abs(self.pos[1] - b2.pos[1])
         z_dist = abs(self.pos[2] - b2.pos[2])
         return math.sqrt(x_dist**2 + y_dist**2 + z_dist**2)
+    
+    def check_intersect(self, b2):
+        dist = self.distance(b2)
+        r1 = abs(self.rad())
+        r2 = abs(b2.rad())
+        return dist <= r1 + r2
 
     def get_color(self):
         return self.color
