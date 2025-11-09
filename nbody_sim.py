@@ -35,7 +35,6 @@ def print_balls(lst):
         print(k)
 
 
-
 maxx = 1000
 maxy = 1000
 maxz = 1000
@@ -81,7 +80,7 @@ while (frame < t_max):
     
     #for root in ball_list:
         #Move the ball based on its velocity
-        #root.move()
+        #move(root)
         
         #Check collisions with walls
         #root.check_and_reverse(maxx, maxy, maxz)
