@@ -10,7 +10,7 @@ import numba
 G = 6.674e-11
 dt = 10
 t_max = 30000
-snapshot_interval = 10000
+snapshot_interval = 15000
 
 def vector_magnitude(v):
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
@@ -27,8 +27,8 @@ def collision(i, j, ball_list):
     v2f = (2*m1 / (m1 + m2)) * v1
     v1f += frame_shift
     v2f += frame_shift
-    
-    #elastic collisions in 3d
+    ball_list[i].vel = v1f
+    ball_list[j].vel = v2f
 
 
 def calculate_acceleration(ball_list, index):
@@ -77,7 +77,7 @@ def print_balls(lst):
         print(k)
 
 #filename = input('Enter the name of the data file: ')
-filename = "nbody_data1.txt"
+filename = "nbody_data2.txt"
 print ('==> ' + filename)
 
 
@@ -155,7 +155,7 @@ while (t < t_max and DEBUG == False):
             if ball_list[root].check_intersect(ball_list[j]) and root != j:
                 print("Collision Detected")
                 print(root, j, t)
-                DEBUG = True
+                #DEBUG = True
                 collision(root, j, ball_list)
         position_data[root][t][0] = ball_list[root].pos[0]
         position_data[root][t][1] = ball_list[root].pos[1]
